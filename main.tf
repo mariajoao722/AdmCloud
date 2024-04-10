@@ -37,6 +37,10 @@ resource "google_compute_instance" "teste1" {
     network_ip = "10.204.0.10"
 
   }
+
+  metadata = {
+    ssh-keys = "${data.tls_public_key.public_key_data.public_key_pem}"
+  }
 }
 
 resource "google_compute_instance" "teste2" {
@@ -61,4 +65,11 @@ resource "google_compute_instance" "teste2" {
 
 }
 
+# Generate the SSH private key
+# this key is efemeral so is destroy with terraform destroy and create with terraform apply
 
+# RSA key of size 4096 bits
+resource "tls_private_key" "ssh_key_pk" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
