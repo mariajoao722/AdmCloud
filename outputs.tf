@@ -11,3 +11,7 @@ output "instance_id2" {
 output "public_ip_teste1" {
   value = google_compute_instance.teste1.network_interface[0].access_config[0].nat_ip
 }
+
+output "public_ip_teste2" {
+  value = google_compute_instance.teste2.network_interface[0].access_config[0].nat_ip
+}
