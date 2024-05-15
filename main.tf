@@ -12,10 +12,10 @@ resource "google_compute_disk" "default" {
 
 # create VM's
 
-resource "google_compute_instance" "teste1" {
+resource "google_compute_instance" "html-instance-us-central1-b" {
   name         = var.instance_name
   machine_type = "e2-micro"
-  zone         = "europe-southwest1-c"
+  zone         = "us-central1-b"
 
   boot_disk {
     initialize_params {
