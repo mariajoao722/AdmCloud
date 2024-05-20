@@ -1,15 +1,3 @@
-# https://cloud.google.com/compute/docs/disks/add-persistent-disk?hl=pt-br#terraform
-
-# Using pd-standard because it's the default for Compute Engine
-# create new disk for some VM's
-resource "google_compute_disk" "default" {
-  name = "dbs"
-  type = "pd-standard"
-  zone = "europe-southwest1-c"
-  size = "10"
-}
-
-
 # create VM's
 
 resource "google_compute_instance" "html-instance-asia-east1-a" {
@@ -22,11 +10,6 @@ resource "google_compute_instance" "html-instance-asia-east1-a" {
       image = "debian-cloud/debian-11"
     }
   }
-
-  /*attached_disk {
-    source      = google_compute_disk.default.id
-    device_name = google_compute_disk.default.name
-  }*/
 
   network_interface {
     network = "default"
@@ -147,4 +130,141 @@ resource "google_compute_instance" "video-instance-us-central1-b" {
 
   metadata_startup_script = file("scripts/video.sh")
 
+}
+
+# Create instance groups
+
+resource "google_compute_instance_group" "video-instance-group-us-central1-b" {
+  name        = "vide-instance-group-us-central1-b"
+  description = "Video US instance group"
+
+  instances = [
+    google_compute_instance.var.video_instance_us_central1_b.id,
+  ]
+
+  named_port {
+    name = "http"
+    port = "80"
+  }
+
+  zone = "us-central1-b"
+}
+
+resource "google_compute_instance_group" "html-instance-group-us-central1-b" {
+  name        = "html-instance-group-us-central1-b"
+  description = "HTML US instance group"
+
+  instances = [
+    google_compute_instance.var.html_instance_us_central1_b.id,
+  ]
+
+  named_port {
+    name = "http"
+    port = "80"
+  }
+
+  zone = "us-central1-b"
+}
+
+resource "google_compute_instance_group" "video-instance-group-asia-east1-a" {
+  name        = "vide-instance-group-asia-east1-a"
+  description = "Video Asia instance group"
+
+  instances = [
+    google_compute_instance.var.video-instance-asia-east1-a.id,
+  ]
+
+  named_port {
+    name = "http"
+    port = "80"
+  }
+
+  zone = "asia-east1-a"
+}
+
+resource "google_compute_instance_group" "html-instance-group-asia-east1-a" {
+  name        = "html-instance-group-asia-east1-a"
+  description = "HTML Asia instance group"
+
+  instances = [
+    google_compute_instance.var.html-instance-asia-east1-a.id,
+  ]
+
+  named_port {
+    name = "http"
+    port = "80"
+  }
+
+  zone = "asia-east1-a"
+}
+
+# Create health checks
+resource "google_compute_health_check" "http-health-check" {
+  name = "http-health-check"
+  timeout_sec        = 5
+  check_interval_sec = 5
+  unhealthy_threshold = 2
+
+  http_health_check {
+    port = 80
+  }
+}
+
+# Create a backend service
+resource "google_compute_backend_service" "video-backend-service" {
+  name                  = "video-backend-service"
+  protocol              = "HTTP"
+  health_checks = [google_compute_http_health_check.http-health-check.id]
+  load_balancing_scheme = "EXTERNAL"
+
+  backend {
+    group = google_compute_instance_group.video-instance-group-us-central1-b.self_link
+  }
+
+  backend {
+    group = google_compute_instance_group.video-instance-group-asia-east1-a.self_link
+  }
+}
+
+resource "google_compute_backend_service" "html-backend-service" {
+  name                  = "html-backend-service"
+  protocol              = "HTTP"
+  health_checks = [google_compute_http_health_check.http-health-check.id]
+  load_balancing_scheme = "EXTERNAL"
+  
+  backend {
+    group = google_compute_instance_group.html-instance-group-us-central1-b.self_link
+  }
+
+  backend {
+    group = google_compute_instance_group.html-instance-group-asia-east1-a.self_link
+  }
+}
+
+# Create a URL map
+resource "google_compute_url_map" "www-url-map" {
+  name        = "www-url-map"
+  description = "URL map "
+
+  default_service = google_compute_backend_service.html-backend-service.id
+
+  path_matcher {
+    name            = "pathmap"
+
+    path_rule {
+      paths   = ["/video"]
+      service = google_compute_backend_service.video-backend-service.id
+    }
+
+    path_rule {
+      paths   = ["/video/*"]
+      service = google_compute_backend_service.video-backend-service.id
+    }
+  }
+}
+
+# Create a target HTTP proxy
+resource "google_compute_target_https_proxy" "www-target-http-proxy" {
+  name             = "www-target-http-proxy"
+  url_map          = google_compute_url_map.www-url-map.id
 }
