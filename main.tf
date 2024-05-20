@@ -217,13 +217,22 @@ resource "google_compute_backend_service" "video-backend-service" {
   health_checks = [google_compute_http_health_check.http-health-check.id]
   load_balancing_scheme = "EXTERNAL"
 
+
   backend {
     group = google_compute_instance_group.video-instance-group-us-central1-b.self_link
+    balancing_mode    = "UTILIZATION"
+    max_utilization   = 0.8
+    capacity_scaler   = 1
   }
 
   backend {
     group = google_compute_instance_group.video-instance-group-asia-east1-a.self_link
+    balancing_mode    = "UTILIZATION"
+    max_utilization   = 0.8
+    capacity_scaler   = 1
   }
+
+
 }
 
 resource "google_compute_backend_service" "html-backend-service" {
@@ -234,17 +243,23 @@ resource "google_compute_backend_service" "html-backend-service" {
   
   backend {
     group = google_compute_instance_group.html-instance-group-us-central1-b.self_link
+    balancing_mode    = "UTILIZATION"
+    max_utilization   = 0.8
+    capacity_scaler   = 1
   }
 
   backend {
     group = google_compute_instance_group.html-instance-group-asia-east1-a.self_link
+    balancing_mode    = "UTILIZATION"
+    max_utilization   = 0.8
+    capacity_scaler   = 1
   }
 }
 
 # Create a URL map
 resource "google_compute_url_map" "www-url-map" {
   name        = "www-url-map"
-  description = "URL map "
+  description = "URL map"
 
   default_service = google_compute_backend_service.html-backend-service.id
 
@@ -260,6 +275,7 @@ resource "google_compute_url_map" "www-url-map" {
       paths   = ["/video/*"]
       service = google_compute_backend_service.video-backend-service.id
     }
+
   }
 }
 
@@ -267,4 +283,69 @@ resource "google_compute_url_map" "www-url-map" {
 resource "google_compute_target_https_proxy" "www-target-http-proxy" {
   name             = "www-target-http-proxy"
   url_map          = google_compute_url_map.www-url-map.id
+}
+
+# Create a global IP address
+resource "google_compute_global_address" "ipv4_address" {
+  name          = "ipv4-address"
+  ip_version    = "IPV4"
+}
+
+# Retrieve the created IPv4 address
+data "google_compute_global_address" "ipv4_address_info" {
+  name = google_compute_global_address.ipv4_address.name
+}
+
+# Create a global forwarding rule
+resource "google_compute_global_forwarding_rule" "www_forwarding_rule_ipv4" {
+  name        = "www-forwarding-rule-ipv4"
+  ip_address  = google_compute_global_address.ipv4_address.address
+  target      = google_compute_target_https_proxy.www-target-http-proxy.id
+  port_range  = "80"
+}
+
+# Create a firewall rule
+resource "google_compute_firewall" "www-firewall-rule" {
+  name    = "www-firewall-rule"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80"]
+  }
+
+  source_ranges = [
+    "130.211.0.0/22",    
+    "35.191.0.0/16",    
+  ]
+}
+
+# Create a storage bucket
+resource "google_storage_bucket" "bucket" {
+  name     = "bucket"
+  location = "ASIA-EAST1"
+}
+
+# Grant object viewer permission to all users
+resource "google_storage_bucket_iam_binding" "object_viewers" {
+  bucket = google_storage_bucket.bucket.name
+  role   = "roles/storage.objectViewer"
+
+  members = [
+    "allUsers"
+  ]
+}
+
+# Create a bucket object
+resource "google_storage_bucket_object" "image_object" {
+  name   = "images/"  // Name of the image object in the bucket
+  bucket = google_storage_bucket.bucket.name
+  source = "images/" 
+}
+
+# Create a static backend bucket
+resource "google_compute_backend_bucket" "static-backend-bucket" {
+  name          = "static-backend-bucket"
+  bucket_name   = "static-backend-bucket"
+  enable_cdn    = false
 }
