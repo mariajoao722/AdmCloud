@@ -22,4 +22,16 @@ variable "instance_name4" {
   default     = "video-instance-us-central1-b"
 }
 
+variable "instance_name5" {
+  description = "Name of the instance"
+  type        = string
+  default     = "html-instance-europe-west9-a"
+}
+
+variable "instance_name6" {
+  description = "Name of the instance"
+  type        = string
+  default     = "video-instance-europe-west9-a"
+}
+
 
