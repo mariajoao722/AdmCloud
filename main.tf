@@ -256,6 +256,38 @@ resource "google_compute_instance_group" "html-instance-group-asia-east1-a" {
   zone = "asia-east1-a"
 }
 
+resource "google_compute_instance_group" "video-instance-group-europe-west9-a" {
+  name        = "vide-instance-group-europe-west9-a"
+  description = "Video Asia instance group"
+
+  instances = [
+    google_compute_instance.video-instance-europe-west9-a.id,
+  ]
+
+  named_port {
+    name = "http"
+    port = "80"
+  }
+
+  zone = "europe-west9-a"
+}
+
+resource "google_compute_instance_group" "html-instance-group-europe-west9-a" {
+  name        = "html-instance-group-europe-west9-a"
+  description = "HTML Asia instance group"
+
+  instances = [
+    google_compute_instance.html-instance-europe-west9-a.id,
+  ]
+
+  named_port {
+    name = "http"
+    port = "80"
+  }
+
+  zone = "europe-west9-a"
+}
+
 # Create health checks
 resource "google_compute_http_health_check" "http-health-check" {
   name = "http-health-check"
@@ -288,6 +320,12 @@ resource "google_compute_backend_service" "video-backend-service" {
     capacity_scaler   = 1
   }
 
+  backend {
+    group = google_compute_instance_group.video-instance-group-europe-west9-a.self_link
+    balancing_mode    = "UTILIZATION"
+    max_utilization   = 0.8
+    capacity_scaler   = 1
+  }
 
 }
 
@@ -310,9 +348,16 @@ resource "google_compute_backend_service" "html-backend-service" {
     max_utilization   = 0.8
     capacity_scaler   = 1
   }
+
+  backend {
+    group = google_compute_instance_group.html-instance-group-europe-west9-a.self_link
+    balancing_mode    = "UTILIZATION"
+    max_utilization   = 0.8
+    capacity_scaler   = 1
+  }
 }
 
-# Create a URL map
+# Create a URL map / load balancer
 resource "google_compute_url_map" "www-url-map" {
   name        = "www-url-map"
   description = "URL map"
@@ -320,7 +365,8 @@ resource "google_compute_url_map" "www-url-map" {
   default_service = google_compute_backend_service.html-backend-service.id
 
   path_matcher {
-    name            = "pathmap"
+    name = "pathmap"
+    default_service = google_compute_backend_service.html-backend-service.id
 
     path_rule {
       paths   = ["/video"]
@@ -331,7 +377,6 @@ resource "google_compute_url_map" "www-url-map" {
       paths   = ["/video/*"]
       service = google_compute_backend_service.video-backend-service.id
     }
-
   }
 }
 
@@ -377,14 +422,14 @@ resource "google_compute_firewall" "www-firewall-rule" {
 }
 
 # Create a storage bucket
-resource "google_storage_bucket" "projcloud" {
-  name     = "bucket"
+resource "google_storage_bucket" "projetocloud-417315" {
+  name     = "bucket-unique-bucket"
   location = "ASIA-EAST1"
 }
 
 # Grant object viewer permission to all users
 resource "google_storage_bucket_iam_binding" "object_viewers" {
-  bucket = google_storage_bucket.projcloud.name
+  bucket = google_storage_bucket.projetocloud-417315.name
   role   = "roles/storage.objectViewer"
   members = ["allUsers"]
   
@@ -392,14 +437,14 @@ resource "google_storage_bucket_iam_binding" "object_viewers" {
 
 # Create a bucket object
 resource "google_storage_bucket_object" "image_object" {
-  name   = "images/"  // Name of the image object in the bucket
-  bucket = google_storage_bucket.projcloud.name
-  source = "images/" 
+  name   = "static/"  // Name of the image object in the bucket
+  bucket = google_storage_bucket.projetocloud-417315.name
+  source = "images/1.jpeg"  // Path to the image object in the local file system
 }
 
 # Create a static backend bucket
 resource "google_compute_backend_bucket" "static-backend-bucket" {
   name          = "static-backend-bucket"
-  bucket_name   = "static-backend-bucket"
+  bucket_name   = google_storage_bucket.projetocloud-417315.name
   enable_cdn    = false
 }
