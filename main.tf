@@ -277,9 +277,34 @@ resource "google_storage_bucket_iam_binding" "object_viewers" {
 
 # Create a bucket object
 resource "google_storage_bucket_object" "image_object" {
-  name   = "static/"  // Name of the image object in the bucket
+  name   = "static/1.jpeg"  // Name of the image object in the bucket
   bucket = google_storage_bucket.projetocloud-417315.name
   source = "images/1.jpeg"  // Path to the image object in the local file system
+}
+resource "google_storage_bucket_object" "image_object1" {
+  name   = "static/2.jpeg"  // Name of the image object in the bucket
+  bucket = google_storage_bucket.projetocloud-417315.name
+  source = "images/2.jpeg"  // Path to the image object in the local file system
+}
+resource "google_storage_bucket_object" "image_object2" {
+  name   = "static/3.jpeg"  // Name of the image object in the bucket
+  bucket = google_storage_bucket.projetocloud-417315.name
+  source = "images/3.jpeg"  // Path to the image object in the local file system
+}
+resource "google_storage_bucket_object" "image_object3" {
+  name   = "static/4.jpeg"  // Name of the image object in the bucket
+  bucket = google_storage_bucket.projetocloud-417315.name
+  source = "images/4.jpeg"  // Path to the image object in the local file system
+}
+resource "google_storage_bucket_object" "image_object4" {
+  name   = "static/5.jpeg"  // Name of the image object in the bucket
+  bucket = google_storage_bucket.projetocloud-417315.name
+  source = "images/5.jpeg"  // Path to the image object in the local file system
+}
+resource "google_storage_bucket_object" "image_object5" {
+  name   = "static/6.jpeg"  // Name of the image object in the bucket
+  bucket = google_storage_bucket.projetocloud-417315.name
+  source = "images/6.jpeg"  // Path to the image object in the local file system
 }
 
 # Create a static backend bucket
