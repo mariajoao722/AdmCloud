@@ -71,6 +71,43 @@ resource "google_compute_instance" "html-instance-europe-west9-a" {
   metadata_startup_script = file("scripts/http.sh")
 }
 
+# Define a rede padrão
+resource "google_compute_network" "default" {
+  name = "default"
+}
+
+# Define a sub-rede padrão
+resource "google_compute_subnetwork" "default" {
+  name          = "default"
+  ip_cidr_range = "10.0.0.0/16"
+  network       = google_compute_network.default.id
+  region        = "us-central1"
+}
+
+resource "google_compute_instance" "client" {
+  count = 3
+  name = "client-${count.index}"
+  machine_type = "e2-micro"
+  zone         = "europe-west9-a"
+
+
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+    }
+  }
+
+  network_interface {
+    network    = google_compute_network.default.name //?
+    subnetwork = google_compute_subnetwork.default.name
+    access_config {}
+  }
+
+  metadata_startup_script = file("scripts/client.sh")
+}
+
+
+
 # Create instance groups
 
 resource "google_compute_instance_group" "html-instance-group-us" {

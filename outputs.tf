@@ -13,3 +13,7 @@ output "public_ip_us" {
 output "public_ip_europe" {
   value = google_compute_instance.html-instance-europe-west9-a.network_interface[0].access_config[0].nat_ip
 }
+
+output "client_ips" {
+  value = google_compute_instance.client[*].network_interface[0].access_config[0].nat_ip
+}

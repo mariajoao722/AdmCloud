@@ -31,6 +31,27 @@ server {
         add_header X-Cache-Status $upstream_cache_status;
 
     }
+
+    location /memcached {
+        internal;
+        set $memcached_key $uri;
+        memcached_pass 127.0.0.1:11211;
+        error_page 404 = @fallback;
+    }
+
+    location @fallback {
+        proxy_pass http://reverse_proxy_server_ip:80;  # Replace with your reverse proxy server's IP address
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_cache my_cache;
+        proxy_cache_valid 200 1m;
+        proxy_cache_use_stale error timeout updating invalid_header http_500 http_502 http_503 http_504;
+        proxy_cache_key "$scheme$request_method$host$request_uri";
+        add_header X-Cache-Status $upstream_cache_status;
+    }
 }
 EOT
 
@@ -94,22 +115,13 @@ cat << 'EOT' > /var/www/html/index.html
         <title>Client VM Cache Test</title>
     </head>
     <body>
-        <div class="container">
-            <h1>Image Gallery from Google Cloud Storage</h1>
-            <div class="image-buttons">
-            <button class="button" onclick="showImage('https://storage.googleapis.com/bucket-unique-bucket/static/1.jpeg')">Image 1</button>
-            <button class="button" onclick="showImage('https://storage.googleapis.com/bucket-unique-bucket/static/2.jpeg')">Image 2</button>
-            <button class="button" onclick="showImage('https://storage.googleapis.com/bucket-unique-bucket/static/3.jpeg')">Image 3</button>
-            <button class="button" onclick="showImage('https://storage.googleapis.com/bucket-unique-bucket/static/4.jpeg')">Image 4</button>
-            <button class="button" onclick="showImage('https://storage.googleapis.com/bucket-unique-bucket/static/5.jpeg')">Image 5</button>
-            <button class="button" onclick="showImage('https://storage.googleapis.com/bucket-unique-bucket/static/6.jpeg')">Image 6</button>
-        </div>
-        <div class="image-container">
-            <img id="imageDisplay" src="" alt="Selected Image">
-        </div>
-    </div>
+      <h1>Hello from client ${count.index}</h1>
+      <p>This is a test page served by the client VM.</p>
     </body>
     </html>
 EOT
 
 sudo service apache2 start
+
+sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
+sudo systemctl restart nginx
