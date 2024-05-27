@@ -3,22 +3,38 @@
 sudo apt-get update
 sudo apt-get install apache2 -y
 sudo apt-get install -y nginx
+sudo apt-get install -y memcache
+
 sudo service nginx start
 
+sudo systemctl start memcached
+sudo systemctl enable memcached
 
-cat << 'EOT' > /etc/nginx/sites-available/default
+
+cat << 'EOT' > /etc/nginx/conf.d/cache.conf
+proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=my_cache:10m max_size=100m inactive=60m use_temp_path=off;
+
 server {
     listen 80;
 
     location / {
-            proxy_pass http://localhost:80;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-    } 
+        proxy_pass http://localhost:80;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_cache my_cache;
+        proxy_cache_valid 200 1m;
+        proxy_cache_use_stale error timeout updating invalid_header http_500 http_502 http_503 http_504;
+        proxy_cache_key "$scheme$request_method$host$request_uri";
+        add_header X-Cache-Status $upstream_cache_status;
+
+    }
 }
 EOT
+
+
 
 sudo service nginx restart
 
@@ -75,6 +91,7 @@ cat << 'EOT' > /var/www/html/index.html
           document.getElementById('imageDisplay').src = imageUrl;
         }
       </script>
+        <title>Client VM Cache Test</title>
     </head>
     <body>
         <div class="container">

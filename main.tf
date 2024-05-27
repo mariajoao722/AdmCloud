@@ -19,13 +19,6 @@ resource "google_compute_instance" "html-instance-asia-east1-a" {
     network_ip = "10.140.0.29"
 
   }
-/*
-  metadata = {
-    ssh-keys = <<EOF
-      monicaaaraujo_aa:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC0sjyxepiun6vl+R3HfyidCAf9lWyjIReNI6gNkmEOymrZonIEmVRorms11Zwl+HU0774BYra3IEgMLmBRIh1k+jstUh1MwpR/ENg01U6OWG+IyzAtvMgXtpMPORM7wxV28O9zpvuNVSfZJtSNsE6UH8sBIlhiSM+MCCpgQaT2X7z43cWBvPHh3NNWSc/xK4B2yAFhj7bmH1WS1tx7jGj8oh8kGft2WPVuAmJrYLrzv+Fni1d0D5bAkDeSTPvb3+CO0IKiCBbV2y/tUIRBWxQVLJh9KXfpTHz5SfOje5k+Tla8eTsyR3JGQt/mIYEEJNFl0TVTGowtmL69w51yDwDETmPqjp3T1wgQQBa3NsNBuqz4mcPdToii/+1xzdm1lVaUYaPqot0IjK1HbFk5ZH2F9O1MIvpxpX1kuUF26FBgAALGYV0mpWrZRQ0seAEDFDGzHKfFsab3D0xcaq7j/LNhLMr7uCEIYLs7pEcs34PWRfl0yo5waDOTqm7D639C4gTsD/ZTyru2cShSGem5wPmBSvl8vSdnwbPEAiErkky/kaj4TPc3peu3XcqwxKeF3Zbje41YpN18zjDVs59xCmjbxRq0jpgePRpycDaBVuWbN/JUu/Xiaapzy1P5t2TBUCEpeDbHq7HiE8zwVcQkJ84uTrYYoVw47+dEJGuU00P52Q== admcloud_key
-      mariajoao7:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC0sjyxepiun6vl+R3HfyidCAf9lWyjIReNI6gNkmEOymrZonIEmVRorms11Zwl+HU0774BYra3IEgMLmBRIh1k+jstUh1MwpR/ENg01U6OWG+IyzAtvMgXtpMPORM7wxV28O9zpvuNVSfZJtSNsE6UH8sBIlhiSM+MCCpgQaT2X7z43cWBvPHh3NNWSc/xK4B2yAFhj7bmH1WS1tx7jGj8oh8kGft2WPVuAmJrYLrzv+Fni1d0D5bAkDeSTPvb3+CO0IKiCBbV2y/tUIRBWxQVLJh9KXfpTHz5SfOje5k+Tla8eTsyR3JGQt/mIYEEJNFl0TVTGowtmL69w51yDwDETmPqjp3T1wgQQBa3NsNBuqz4mcPdToii/+1xzdm1lVaUYaPqot0IjK1HbFk5ZH2F9O1MIvpxpX1kuUF26FBgAALGYV0mpWrZRQ0seAEDFDGzHKfFsab3D0xcaq7j/LNhLMr7uCEIYLs7pEcs34PWRfl0yo5waDOTqm7D639C4gTsD/ZTyru2cShSGem5wPmBSvl8vSdnwbPEAiErkky/kaj4TPc3peu3XcqwxKeF3Zbje41YpN18zjDVs59xCmjbxRq0jpgePRpycDaBVuWbN/JUu/Xiaapzy1P5t2TBUCEpeDbHq7HiE8zwVcQkJ84uTrYYoVw47+dEJGuU00P52Q== admcloud_key
-    EOF
-  }*/
 
   metadata_startup_script = file("scripts/http.sh")
 }
@@ -51,13 +44,6 @@ resource "google_compute_instance" "html-instance-us-central1-b" {
 
   }
 
-  /*metadata = {
-    ssh-keys = <<EOF
-      monicaaaraujo_aa:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC0sjyxepiun6vl+R3HfyidCAf9lWyjIReNI6gNkmEOymrZonIEmVRorms11Zwl+HU0774BYra3IEgMLmBRIh1k+jstUh1MwpR/ENg01U6OWG+IyzAtvMgXtpMPORM7wxV28O9zpvuNVSfZJtSNsE6UH8sBIlhiSM+MCCpgQaT2X7z43cWBvPHh3NNWSc/xK4B2yAFhj7bmH1WS1tx7jGj8oh8kGft2WPVuAmJrYLrzv+Fni1d0D5bAkDeSTPvb3+CO0IKiCBbV2y/tUIRBWxQVLJh9KXfpTHz5SfOje5k+Tla8eTsyR3JGQt/mIYEEJNFl0TVTGowtmL69w51yDwDETmPqjp3T1wgQQBa3NsNBuqz4mcPdToii/+1xzdm1lVaUYaPqot0IjK1HbFk5ZH2F9O1MIvpxpX1kuUF26FBgAALGYV0mpWrZRQ0seAEDFDGzHKfFsab3D0xcaq7j/LNhLMr7uCEIYLs7pEcs34PWRfl0yo5waDOTqm7D639C4gTsD/ZTyru2cShSGem5wPmBSvl8vSdnwbPEAiErkky/kaj4TPc3peu3XcqwxKeF3Zbje41YpN18zjDVs59xCmjbxRq0jpgePRpycDaBVuWbN/JUu/Xiaapzy1P5t2TBUCEpeDbHq7HiE8zwVcQkJ84uTrYYoVw47+dEJGuU00P52Q== admcloud_key
-      mariajoao7:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC0sjyxepiun6vl+R3HfyidCAf9lWyjIReNI6gNkmEOymrZonIEmVRorms11Zwl+HU0774BYra3IEgMLmBRIh1k+jstUh1MwpR/ENg01U6OWG+IyzAtvMgXtpMPORM7wxV28O9zpvuNVSfZJtSNsE6UH8sBIlhiSM+MCCpgQaT2X7z43cWBvPHh3NNWSc/xK4B2yAFhj7bmH1WS1tx7jGj8oh8kGft2WPVuAmJrYLrzv+Fni1d0D5bAkDeSTPvb3+CO0IKiCBbV2y/tUIRBWxQVLJh9KXfpTHz5SfOje5k+Tla8eTsyR3JGQt/mIYEEJNFl0TVTGowtmL69w51yDwDETmPqjp3T1wgQQBa3NsNBuqz4mcPdToii/+1xzdm1lVaUYaPqot0IjK1HbFk5ZH2F9O1MIvpxpX1kuUF26FBgAALGYV0mpWrZRQ0seAEDFDGzHKfFsab3D0xcaq7j/LNhLMr7uCEIYLs7pEcs34PWRfl0yo5waDOTqm7D639C4gTsD/ZTyru2cShSGem5wPmBSvl8vSdnwbPEAiErkky/kaj4TPc3peu3XcqwxKeF3Zbje41YpN18zjDVs59xCmjbxRq0jpgePRpycDaBVuWbN/JUu/Xiaapzy1P5t2TBUCEpeDbHq7HiE8zwVcQkJ84uTrYYoVw47+dEJGuU00P52Q== admcloud_key
-    EOF
-  }*/
-
   metadata_startup_script = file("scripts/http.sh")
 }
 
@@ -82,24 +68,18 @@ resource "google_compute_instance" "html-instance-europe-west9-a" {
 
   }
 
-  /*metadata = {
-    ssh-keys = <<EOF
-      monicaaaraujo_aa:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC0sjyxepiun6vl+R3HfyidCAf9lWyjIReNI6gNkmEOymrZonIEmVRorms11Zwl+HU0774BYra3IEgMLmBRIh1k+jstUh1MwpR/ENg01U6OWG+IyzAtvMgXtpMPORM7wxV28O9zpvuNVSfZJtSNsE6UH8sBIlhiSM+MCCpgQaT2X7z43cWBvPHh3NNWSc/xK4B2yAFhj7bmH1WS1tx7jGj8oh8kGft2WPVuAmJrYLrzv+Fni1d0D5bAkDeSTPvb3+CO0IKiCBbV2y/tUIRBWxQVLJh9KXfpTHz5SfOje5k+Tla8eTsyR3JGQt/mIYEEJNFl0TVTGowtmL69w51yDwDETmPqjp3T1wgQQBa3NsNBuqz4mcPdToii/+1xzdm1lVaUYaPqot0IjK1HbFk5ZH2F9O1MIvpxpX1kuUF26FBgAALGYV0mpWrZRQ0seAEDFDGzHKfFsab3D0xcaq7j/LNhLMr7uCEIYLs7pEcs34PWRfl0yo5waDOTqm7D639C4gTsD/ZTyru2cShSGem5wPmBSvl8vSdnwbPEAiErkky/kaj4TPc3peu3XcqwxKeF3Zbje41YpN18zjDVs59xCmjbxRq0jpgePRpycDaBVuWbN/JUu/Xiaapzy1P5t2TBUCEpeDbHq7HiE8zwVcQkJ84uTrYYoVw47+dEJGuU00P52Q== admcloud_key
-      mariajoao7:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC0sjyxepiun6vl+R3HfyidCAf9lWyjIReNI6gNkmEOymrZonIEmVRorms11Zwl+HU0774BYra3IEgMLmBRIh1k+jstUh1MwpR/ENg01U6OWG+IyzAtvMgXtpMPORM7wxV28O9zpvuNVSfZJtSNsE6UH8sBIlhiSM+MCCpgQaT2X7z43cWBvPHh3NNWSc/xK4B2yAFhj7bmH1WS1tx7jGj8oh8kGft2WPVuAmJrYLrzv+Fni1d0D5bAkDeSTPvb3+CO0IKiCBbV2y/tUIRBWxQVLJh9KXfpTHz5SfOje5k+Tla8eTsyR3JGQt/mIYEEJNFl0TVTGowtmL69w51yDwDETmPqjp3T1wgQQBa3NsNBuqz4mcPdToii/+1xzdm1lVaUYaPqot0IjK1HbFk5ZH2F9O1MIvpxpX1kuUF26FBgAALGYV0mpWrZRQ0seAEDFDGzHKfFsab3D0xcaq7j/LNhLMr7uCEIYLs7pEcs34PWRfl0yo5waDOTqm7D639C4gTsD/ZTyru2cShSGem5wPmBSvl8vSdnwbPEAiErkky/kaj4TPc3peu3XcqwxKeF3Zbje41YpN18zjDVs59xCmjbxRq0jpgePRpycDaBVuWbN/JUu/Xiaapzy1P5t2TBUCEpeDbHq7HiE8zwVcQkJ84uTrYYoVw47+dEJGuU00P52Q== admcloud_key
-    EOF
-  }*/
-
   metadata_startup_script = file("scripts/http.sh")
 }
 
 # Create instance groups
 
-resource "google_compute_instance_group" "html-instance-group-us-central1-b" {
-  name        = "html-instance-group-us-central1-b"
+resource "google_compute_instance_group" "html-instance-group-us" {
+  name        = "html-instance-group-us"
   description = "HTML US instance group"
 
   instances = [
     google_compute_instance.html-instance-us-central1-b.id,
+
   ]
 
   named_port {
@@ -110,8 +90,8 @@ resource "google_compute_instance_group" "html-instance-group-us-central1-b" {
   zone = "us-central1-b"
 }
 
-resource "google_compute_instance_group" "html-instance-group-asia-east1-a" {
-  name        = "html-instance-group-asia-east1-a"
+resource "google_compute_instance_group" "html-instance-group-asia" {
+  name        = "html-instance-group-asia"
   description = "HTML Asia instance group"
 
   instances = [
@@ -126,9 +106,9 @@ resource "google_compute_instance_group" "html-instance-group-asia-east1-a" {
   zone = "asia-east1-a"
 }
 
-resource "google_compute_instance_group" "html-instance-group-europe-west9-a" {
-  name        = "html-instance-group-europe-west9-a"
-  description = "HTML Asia instance group"
+resource "google_compute_instance_group" "html-instance-group-europe" {
+  name        = "html-instance-group-europe"
+  description = "HTML Europe instance group"
 
   instances = [
     google_compute_instance.html-instance-europe-west9-a.id,
@@ -153,7 +133,6 @@ resource "google_compute_http_health_check" "http-health-check" {
 }
 
 # Create a backend service
-
 resource "google_compute_backend_service" "html-backend-service" {
   name                  = "html-backend-service"
   protocol              = "HTTP"
@@ -161,27 +140,27 @@ resource "google_compute_backend_service" "html-backend-service" {
   load_balancing_scheme = "EXTERNAL"
   
   backend {
-    group = google_compute_instance_group.html-instance-group-us-central1-b.self_link
+    group = google_compute_instance_group.html-instance-group-us.self_link
     balancing_mode    = "UTILIZATION"
     max_utilization   = 0.8
     capacity_scaler   = 1
   }
 
   backend {
-    group = google_compute_instance_group.html-instance-group-asia-east1-a.self_link
+    group = google_compute_instance_group.html-instance-group-asia.self_link
     balancing_mode    = "UTILIZATION"
     max_utilization   = 0.8
     capacity_scaler   = 1
   }
 
   backend {
-    group = google_compute_instance_group.html-instance-group-europe-west9-a.self_link
+    group = google_compute_instance_group.html-instance-group-europe.self_link
     balancing_mode    = "UTILIZATION"
     max_utilization   = 0.8
     capacity_scaler   = 1
   }
+
 }
-
 
 # Create a URL map / load balance
 resource "google_compute_url_map" "www-url-map" {
@@ -264,7 +243,9 @@ resource "google_compute_firewall" "www-firewall-rule-aisa" {
 # Create a storage bucket
 resource "google_storage_bucket" "projetocloud-417315" {
   name     = "bucket-unique-bucket"
-  location = "ASIA-EAST1"
+  location = "ASIA"
+  uniform_bucket_level_access = true
+  storage_class = "STANDARD"
 }
 
 # Grant object viewer permission to all users
@@ -301,6 +282,7 @@ resource "google_storage_bucket_object" "image_object4" {
   bucket = google_storage_bucket.projetocloud-417315.name
   source = "images/5.jpeg"  // Path to the image object in the local file system
 }
+
 resource "google_storage_bucket_object" "image_object5" {
   name   = "static/6.jpeg"  // Name of the image object in the bucket
   bucket = google_storage_bucket.projetocloud-417315.name
