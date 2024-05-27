@@ -248,6 +248,7 @@ ExecStart=/usr/bin/python3 /home/mjmarquespais/var/www/html/app.py
 WantedBy=multi-user.target
 EOT
 
+
 sudo systemctl daemon-reload
 sudo systemctl enable service.service
 sudo systemctl start service.service

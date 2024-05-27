@@ -30,18 +30,72 @@ else
     echo "Falha na instalação do Nginx." | sudo tee -a /var/log/startup-script.log
 fi
 
+#instalar Memcache
+sudo apt-get install -y memcache |  sudo tee -a /var/log/startup-script.log
+sudo systemctl start memcached |  sudo tee -a /var/log/startup-script.log
+sudo systemctl enable memcached |  sudo tee -a /var/log/startup-script.log
+
 #sudo apt-get install -y python3-pip | sudo tee -a /var/log/startup-script.log
 
 #sudo pip install Flask | sudo tee -a /var/log/startup-script.log
 
 #sudo pip install google-cloud-storage | sudo tee -a /var/log/startup-script.log
 
+
+
+CONFIG_FILE_APACHE2="/etc/apache2/sites-available/000-default.conf"
+
+# Substituir o conteúdo do arquivo de configuração com a nova porta
+sudo tee $CONFIG_FILE_APACHE2 > /dev/null << 'EOT'
+<VirtualHost *:8080>
+        # The ServerName directive sets the request scheme, hostname and port that
+        # the server uses to identify itself. This is used when creating
+        # redirection URLs. In the context of virtual hosts, the ServerName
+        # specifies what hostname must appear in the request's Host: header to
+        # match this virtual host. For the default virtual host (this file) this
+        # value is not decisive as it is used as a last resort host regardless.
+        # However, you must set it for any further virtual host explicitly.
+        #ServerName www.example.com
+
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/html
+
+        # Available loglevels: trace8, ..., trace1, debug, info, notice, warn,
+        # error, crit, alert, emerg.
+        # It is also possible to configure the loglevel for particular
+        # modules, e.g.
+        #LogLevel info ssl:warn
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+        # For most configuration files from conf-available/, which are
+        # enabled or disabled at a global level, it is possible to
+        # include a line for only one particular virtual host. For example the
+        # following line enables the CGI configuration for this host only
+        # after it has been globally disabled with "a2disconf".
+        #Include conf-available/serve-cgi-bin.conf
+</VirtualHost>
+
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+EOT
+
+
+PORTS_CONFIG_FILE="/etc/apache2/ports.conf"
+
+sudo sed -i 's/Listen 80/Listen 8080/g' "$PORTS_CONFIG_FILE"
+
+
+sudo systemctl restart apache2
+
+
+
 cat << 'EOT' > /etc/nginx/sites-available/default
 server {
     listen 80;
 
     location / {
-            proxy_pass http://localhost:80;
+            proxy_pass http://natIp:8080;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -49,6 +103,15 @@ server {
     } 
 }
 EOT
+
+NAT_IP=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)
+
+#CHANGE_IP = "/etc/nginx/sites-available/default"
+
+#sudo sed -i 's/natIp/${NAT_IP}/g' "$CHANGE_IP"
+
+sudo bash -c "sed -i 's/natIp/$NAT_IP/g' /etc/nginx/sites-available/default"
+
 
 sudo service nginx restart | sudo tee -a /var/log/startup-script.log
 
@@ -59,20 +122,22 @@ cat << 'EOT' > /var/www/html/index.html
         <title>Website</title>
     </head>
     <body>
-        <h1>Website</h1>
+    <div id="content">
+        <h1>Cliente Website</h1>
         <ul>
             {% for blob in blobs %}
             <li>
-                <a href="{{blob.url}}" target="_blank">{{blob.name}}</a>
+                <a href="{{ blob.url }}" target="_blank">{{ blob.name }}</a>
             </li>
             {% endfor %}
-
         </ul>
-        <p> És admin?</p>
-        <form action="{{url_for('login')}}">
+        </div>
+        <div id="login">
+        <p> Es admin?</p>
+        <form action="{{ url_for('login') }}">
            <button type="submit">Login</button>
         </form>
-
+        </div>
     </body>
     </html>
 EOT
@@ -84,7 +149,7 @@ cat << 'EOT' > /var/www/html/login.html
     </head>
     <body>
         <h1>Login</h1>
-        <form action="{{url_for('login')}}" method="post">
+        <form action="{{ url_for('login') }}" method="post">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>
             <label for="password">Password:</label>
@@ -107,8 +172,8 @@ cat << 'EOT' > /var/www/html/auth.html
         <ul>
             {% for blob in blobs %}
             <li>
-                <a href="{{blob.url}}" target="_blank">{{blob.name}}</a>
-                <form action="{{url_for('delete file', file_name=blob.name) }}" method="post">
+                <a href="{{ blob.url }}" target="_blank">{{ blob.name }}</a>
+                <form action="{{ url_for('delete file', file_name=blob.name) }}" method="post">
                     <button type="submit">Delete</button>
                 </form>
             </li>
@@ -116,14 +181,14 @@ cat << 'EOT' > /var/www/html/auth.html
 
         </ul>
 
-        <form action="{{url_for('upload_file)}}" method="post" enctype="multipart/form-data">
+        <form action="{{ url_for('upload_file) }}" method="post" enctype="multipart/form-data">
            <label for="file">Filename:</label>
            <input type="file" id="file" name="file" required>
             <button type="submit">Upload</button>
         </form>
 
         <p> Conta </p>
-        <form action="{{url_for('index')}}">
+        <form action="{{ url_for('index') }}">
            <button type="submit">Logout</button>
         </form>
     </body>
@@ -139,7 +204,7 @@ cat << 'EOT' > /var/www/html/auth_error.html
     <body>
         <h1>Login</h1>
         <p>Invalid username or password</p>
-        <form action="{{url_for('login')}}" method="post">
+        <form action="{{ url_for('login') }}" method="post">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>
             <label for="password">Password:</label>
@@ -161,7 +226,7 @@ bucket_name = 'bucket-unique-bucket'
 @app.route('/')
 def index():
     client = storage.Client.from_service_account_json('keys.json')
-    buckets = client.buckets(bucket_name)
+    buckets = client.get_bucket(bucket_name)
     blobs = buckets.list_blobs()
 
     blobs_data=[]
@@ -193,7 +258,7 @@ def auth_error():
 @app.route('/auth')
 def auth():
     client = storage.Client.from_service_account_json('keys.json')
-    buckets = client.buckets(bucket_name)
+    buckets = client.get_bucket(bucket_name)
     blobs = buckets.list_blobs()
 
     blobs_data=[]
@@ -252,22 +317,26 @@ cat << 'EOT' > /var/www/html/keys.json
   }
 EOT
 
+sudo chmod +x home/mjmarquespais/var/www/html/app.py
+
 sudo service apache2 start | sudo tee -a /var/log/startup-script.log
 
-cat << 'EOT' > home/mjmarquespais/service.service
+cat << 'EOT' > home/mjmarquespais/flask.service
 [Unit]
-Description=Service
+Description=Flask App
 After=network.target
 
 [Service]
 Type=simple
 Restart=always
-ExecStart=/usr/bin/python3 /home/mjmarquespais/var/www/html/app.py
+ExecStart=/usr/bin/sudo /usr/bin/python3 /home/mjmarquespais/var/www/html/app.py
 
 [Install]
 WantedBy=multi-user.target
 EOT
 
+sudo cp /home/mjmarquespais/flask-app.service /etc/systemd/system/flask-app.service | sudo tee -a /var/log/startup-script.log
+
 sudo systemctl daemon-reload | sudo tee -a /var/log/startup-script.log
-sudo systemctl enable service.service | sudo tee -a /var/log/startup-script.log
-sudo systemctl start service.service | sudo tee -a /var/log/startup-script.log
+sudo systemctl enable flask-app | sudo tee -a /var/log/startup-script.log
+sudo systemctl start flask-app | sudo tee -a /var/log/startup-script.log

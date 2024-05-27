@@ -117,7 +117,7 @@ resource "google_compute_instance" "client-instance-1" {
 
   }
 
-  metadata_startup_script = file("scripts/client.sh")
+  metadata_startup_script = file("scripts/cl.sh")
 }
 
 resource "google_compute_instance" "client-instance-2" {
@@ -300,7 +300,7 @@ resource "google_compute_firewall" "www-firewall-rule-us" {
 
   allow {
     protocol = "tcp"
-    ports    = ["80","443","22"]
+    ports    = ["80","443","22","8080"]
   }
 
   source_ranges = [
@@ -314,7 +314,7 @@ resource "google_compute_firewall" "www-firewall-rule-eu" {
 
   allow {
     protocol = "tcp"
-    ports    = ["80","443","22"]
+    ports    = ["80","443","22","8080"]
   }
 
   source_ranges = [
@@ -328,7 +328,7 @@ resource "google_compute_firewall" "www-firewall-rule-aisa" {
 
   allow {
     protocol = "tcp"
-    ports    = ["80","443","22"]
+    ports    = ["80","443","22","8080"]
   }
 
   source_ranges = [
