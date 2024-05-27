@@ -92,7 +92,7 @@ sudo systemctl restart apache2
 
 cat << 'EOT' > /etc/nginx/sites-available/default
 server {
-    listen 80;
+    listen 8000;
 
     location / {
             proxy_pass http://natIp:8080;
@@ -113,42 +113,239 @@ NAT_IP=$(curl -s -H "Metadata-Flavor: Google" http://metadata.google.internal/co
 sudo bash -c "sed -i 's/natIp/$NAT_IP/g' /etc/nginx/sites-available/default"
 
 
+# server pode ser que seja conectado ao nosso ip e nao ao local host, vamos ver
+cat << 'EOT' > /etc/nginx/sites-available/cache.conf
+proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=custom_cache:10m max_size=100m inactive=60m;
+
+
+upstream origin_server {
+    server 127.0.0.1:8000;
+    
+}
+
+server {
+    listen 8001;
+    server_name _;
+
+    location / {
+        include proxy_params;
+        proxy_pass http://origin_server;
+
+        proxy_cache custom_cache;
+        proxy_cache_valid any 10m;
+        add_header X-Proxy-Cache $upstream_cache_status;
+    }
+}
+EOT
+sudo bash -c "sed -i 's/natIp/$NAT_IP/g' /etc/nginx/sites-available/cache.conf"
+
+ln -s /etc/nginx/sites-available/cache.conf /etc/nginx/sites-enabled/
+
 sudo service nginx restart | sudo tee -a /var/log/startup-script.log
 
+sudo mkdir -p /var/www/html/templates
 
-cat << 'EOT' > /var/www/html/index.html
-    <html>
+cat << 'EOT' > /var/www/html/templates/index.html
+    <html lang="pt-BR">
     <head>
-        <title>Website</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Site do Cliente</title>
+        <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 1em 0;
+            text-align: center;
+            position: relative;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        nav ul li {
+            display: inline;
+            margin: 0 1em;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        #login {
+            position: absolute;
+            top: 1em;
+            right: 1em;
+            background: #fff;
+            padding: 0.5em;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            color: #333;
+        }
+
+        #login label {
+            margin: 0;
+            display: block;
+        }
+
+        #login form {
+            display: inline-block;
+        }
+
+        #login button {
+            padding: 0.5em 1em;
+            border: none;
+            border-radius: 3px;
+            background: #333;
+            color: #fff;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        main {
+            padding: 2em;
+        }
+
+        section {
+            background: #fff;
+            padding: 1em;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 2em;
+        }
+
+        section h2 {
+            color: #333;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            background: #fff;
+            margin: 0.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        ul li a {
+            color: #333;
+            text-decoration: none;
+        }
+    </style>
     </head>
     <body>
-    <div id="content">
-        <h1>Cliente Website</h1>
-        <ul>
-            {% for blob in blobs %}
-            <li>
-                <a href="{{ blob.url }}" target="_blank">{{ blob.name }}</a>
-            </li>
-            {% endfor %}
-        </ul>
-        </div>
+        <header>
+        <h1>Bem-vindo ao Site do Cliente</h1>
+
         <div id="login">
-        <p> Es admin?</p>
-        <form action="{{ url_for('login') }}">
-           <button type="submit">Login</button>
-        </form>
+            <form id="admin-login" action="{{ url_for('login') }}">
+                <button type="submit">Login para Admins</button>
+            </form>
         </div>
+        </header>
+        <main>
+            <section>
+                <h2>Decentralized Virtual CDN</h2>
+                <p>No âmbito da unidade curricular de Administração de Sistemas Cloud foi proposta a realização de um projeto visando criar um serviço descentralizado, usando as ferramentas da Google Cloud, que possibilitasse o fornecimento de conteúdo a clientes espalhados pelo mundo. O propósito do uso de uma CDN e aproximar os servidores, que dispõem o serviço dos clientes de maneira  a reduzir a latência entre eles</p>
+            </section>
+
+            <ul>
+                {% for blob in blobs %}
+                <li>
+                    <a href="{{ blob.url }}" target="_blank">{{ blob.name }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </main>
     </body>
     </html>
 EOT
 
-cat << 'EOT' > /var/www/html/login.html
-<html>
-    <head>
-        <title>Login</title>
-    </head>
-    <body>
-        <h1>Login</h1>
+cat << 'EOT' > /var/www/html/templates/login.html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Site do Cliente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 1em;
+            font-size: 2.5em; /* Aumentando o tamanho da fonte */
+        }
+
+        .login-container {
+            background: #fff;
+            padding: 2em;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 0.5em;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 0.5em;
+            margin-bottom: 1em;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        input[type="submit"] {
+            width: 100%;
+            padding: 0.5em;
+            border: none;
+            border-radius: 3px;
+            background: #333;
+            color: #fff;
+            font-size: 1em;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Login</h1>
+    <div class="login-container">
         <form action="{{ url_for('login') }}" method="post">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>
@@ -156,54 +353,226 @@ cat << 'EOT' > /var/www/html/login.html
             <input type="password" id="password" name="password" required>
             <input type="submit" value="Login">
         </form>
-    </body>
+    </div>
+</body>
 </html>
+
 EOT
 
-cat << 'EOT' > /var/www/html/auth.html
-    <html>
-    <head>
-        <title>Website</title>
+cat << 'EOT' > /var/www/html/templates/auth.html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
 
-    </head>
-    <body>
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 1em 0;
+            text-align: center;
+            position: relative;
+        }
 
-        <h1>Website</h1>
+        header h1 {
+            margin: 0;
+        }
+
+        .logout {
+            position: absolute;
+            top: 1em;
+            right: 1em;
+            background: #fff;
+            padding: 0.5em;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .logout form {
+            margin: 0;
+        }
+
+        .logout button {
+            padding: 0.5em 1em;
+            border: none;
+            border-radius: 3px;
+            background: #333;
+            color: #fff;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        main {
+            padding: 2em;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            background: #fff;
+            margin: 0.5em 0;
+            padding: 1em;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        ul li a {
+            color: #333;
+            text-decoration: none;
+        }
+
+        form {
+            display: inline-block;
+            margin: 0;
+        }
+
+        form button, input[type="submit"] {
+            padding: 0.5em 1em;
+            border: none;
+            border-radius: 3px;
+            background: #333;
+            color: #fff;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5em;
+            color: #333;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin-bottom: 1em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Bem-vindo ao Painel do Admistrador </h1>
+        <div class="logout">
+            <form action="{{ url_for('index') }}">
+                <button type="submit">Logout</button>
+            </form>
+        </div>
+    </header>
+
+    <main>
         <ul>
             {% for blob in blobs %}
             <li>
                 <a href="{{ blob.url }}" target="_blank">{{ blob.name }}</a>
-                <form action="{{ url_for('delete file', file_name=blob.name) }}" method="post">
+                <form action="{{ url_for('delete', file_name=blob.name) }}" method="post">
                     <button type="submit">Delete</button>
                 </form>
             </li>
             {% endfor %}
-
         </ul>
 
-        <form action="{{ url_for('upload_file) }}" method="post" enctype="multipart/form-data">
-           <label for="file">Filename:</label>
-           <input type="file" id="file" name="file" required>
+        <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
+            <label for="file">Filename:</label>
+            <input type="file" id="file" name="file" required>
             <button type="submit">Upload</button>
         </form>
+    </main>
+</body>
+</html>
 
-        <p> Conta </p>
-        <form action="{{ url_for('index') }}">
-           <button type="submit">Logout</button>
-        </form>
-    </body>
-    </html>
 EOT
 
-cat << 'EOT' > /var/www/html/auth_error.html
-<html>
-<html>
-    <head>
-        <title>Login</title>
-    </head>
-    <body>
-        <h1>Login</h1>
-        <p>Invalid username or password</p>
+cat << 'EOT' > /var/www/html/templates/auth_error.html
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Site do Cliente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 1em;
+            font-size: 2.5em; /* Aumentando o tamanho da fonte */
+        }
+
+        .login-container {
+            background: #fff;
+            padding: 2em;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .error-message {
+            color: red;
+            margin-bottom: 1em;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 0.5em;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 0.5em;
+            margin-bottom: 1em;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        input[type="submit"] {
+            width: 100%;
+            padding: 0.5em;
+            border: none;
+            border-radius: 3px;
+            background: #333;
+            color: #fff;
+            font-size: 1em;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Login</h1>
+    <div class="login-container">
+        <p class="error-message">Invalid username or password</p>
         <form action="{{ url_for('login') }}" method="post">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>
@@ -211,22 +580,25 @@ cat << 'EOT' > /var/www/html/auth_error.html
             <input type="password" id="password" name="password" required>
             <input type="submit" value="Login">
         </form>
-    </body>
-    </html>
+    </div>
+</body>
+</html>
+
 EOT
 
 cat << 'EOT' > /var/www/html/app.py
-from flask import Flash, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash
 from google.cloud import storage
 
 app = Flask(__name__)
+app.secret_key = 'supersecretkey'
 bucket_name = 'bucket-unique-bucket'
 
 #Default
 @app.route('/')
 def index():
-    client = storage.Client.from_service_account_json('keys.json')
-    buckets = client.get_bucket(bucket_name)
+    client = storage.Client.from_service_account_json('/var/www/html/keys.json')
+    buckets = client.bucket(bucket_name)
     blobs = buckets.list_blobs()
 
     blobs_data=[]
@@ -257,8 +629,8 @@ def auth_error():
 #Auth
 @app.route('/auth')
 def auth():
-    client = storage.Client.from_service_account_json('keys.json')
-    buckets = client.get_bucket(bucket_name)
+    client = storage.Client.from_service_account_json('/var/www/html/keys.json')
+    buckets = client.bucket(bucket_name)
     blobs = buckets.list_blobs()
 
     blobs_data=[]
@@ -275,21 +647,20 @@ def auth():
 def upload():
         f = request.files['file']
         if f:
-            client = storage.Client.from_service_account_json('keys.json')
-            bucket = client.get_bucket(bucket_name)
+            client = storage.Client.from_service_account_json('/var/www/html/keys.json')
+            bucket = client.bucket(bucket_name)
 
             blob = bucket.blob(f.filename)
             blob.upload_from_string(f.read(), content_type=f.content_type)
             flash('File uploaded successfully')
         return redirect(url_for('auth'))
-        
 
 
 #Delete
-@app.route('/delete/<file_name>', methods=['POST'])
+@app.route('/delete/static/<file_name>', methods=['POST'])
 def delete(file_name):
-    client = storage.Client.from_service_account_json('keys.json')
-    bucket = client.get_bucket(bucket_name)
+    client = storage.Client.from_service_account_json('/var/www/html/keys.json')
+    bucket = client.bucket(bucket_name)
 
     blob = bucket.blob(file_name)
     blob.delete()
@@ -298,12 +669,12 @@ def delete(file_name):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=443, debug=True)
 EOT
 
 cat << 'EOT' > /var/www/html/keys.json
 {
-  ""type": "service_account",
+  "type": "service_account",
   "project_id": "projetocloud-417315",
   "private_key_id": "745fd69ca3784f01261a3024a9e902cc641e435c",
   "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDBBYqlAQd0+le9\n9nfHEoASS+poXdRBpHnTM8yJ4j143gTpn879VaaFoAkaHl2/Ry8r+/jHyIA26f5N\nvO9m9cpNNDz79Yz/D/USOuIkry8uaKoU/rtN5Xmraw6AAd95zWQBbzSaZk/d6Jk1\ndoba7pow+9tRebxIHtgcQgea/mV7soCuJ1C+RlCEAt61ljlxHI6RDWPlShT0zaLZ\nplwXyxY6qwvLDlFSseVgapDA6l1nCOvpCXFQIMlABROtuCA1UFiFF2y9F7SacxhD\ngBdqLcePklYMWH62fsA/IQWayhL711XRF0/FuL44tHgWeg0FVHgnsN6FMAo7OgmY\nzigsEvxfAgMBAAECggEARvwIPF1QBjuIqBIrg3jww4nKp14WUJuxt7O9fVnH3Jrd\nuKMuRqlIh6zOnB3dwRnnJahRGfvI9yj/fkxEyJsMrm7PHKP1mdme+XjRMMeCNPGF\n1xnE/UUuhRVmbDoEGvGnXQWuFTgaGBRRv8EaoAoOh4Qf6Gs6DFXXiTDZRi1XWfEr\n5U1UYsdVlhs0+i2Avy57SmH641OuNZsrBrZpZ+9ZX0aqv5b8vJZKl/L68T/0/NB9\n55CqGxUFmUp02EgKzKdtlNTGCe/GhFmVkOlU2NFvxX355cBkyYCv49r5nFPdKmJZ\nnVMHCeV+2jYj6Ffj/gkHdx/L6REUUhgDwXBtz9lQEQKBgQDxd+yJkEj0FFeK6FxL\nRhFC5M6WpEzgDkcfA2v9eAU4FBj/yUZJOT4HzcG6mTd/DjPUB/zyJpFlQIYD8eNA\nkz/j9qtyzq2TJ9B5bauUYO14LisTyEblKt21pmzcjSMkC5QErRWaTi6aFxZaPR6K\ng02jogO/0DBFShXuY1SLUaQdUQKBgQDMoz5VluzFdvPg1/84LbJ3WzAajOQvzefR\nw7hj22EjdMs+p24oV0gPPNRoePTExbNABKAojimh4zs1U60H0X+iy5whoLqmN+FG\nEcOwiGVTbvWaHwnK2kiKyjaQW3IuNwZdNIGMX0owtehs0QxPfLXUJ3KtwcAoKGhh\nEDON589SrwKBgEjpak4beDvjTI/QG9ZK4Plu94Z7NA9PoGAX+2q86+6D+wx5bTS9\nCSL4GTBMBXrjAflbNCC2Tp7hPdZBGtqr29Xs7NYs3DKcChIwcGfMYMgyQKWniui1\n6d5o02RBZcQDjv1eejBuvRmgMQqse+VdQntPd4xaw8iYV0j1S1kKHOERAoGAHu5l\n06YWb9qFDm1XpHQzz5q28KxvKVKkQa6lxmI4kpVqyzOfkPVwbO0y5f+yb7O6XmjU\nlIy4ekHQh0T4mH/wHPlNxj93NvynTmINBDf5qNzSvtMGNeU8pc3e5X8NCTNEAP6Y\nvlEA88/rK9eFVtZw3XqA+QaaNve0n0dFo6NwUP0CgYAyJ7Dk8GfpdNOnbPby37Yn\nqu5jagHGHNNZEnZ7yZ2SRTdLE2YDsaMKXK4kcR8sEbYtYZhgBGwor40xmyDMX2vM\nXCbK0bODpu5ILZl8sZoiPizldvtlQjemsOpfKAYNSrUtJfgULYY47V4DMKHPU9ji\nWsFutr/ZzHVKkFiU47etOg==\n-----END PRIVATE KEY-----\n",
@@ -314,10 +685,13 @@ cat << 'EOT' > /var/www/html/keys.json
   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/terraform%40projetocloud-417315.iam.gserviceaccount.com",
   "universe_domain": "googleapis.com"
-  }
+}
+
 EOT
 
 sudo chmod +x home/mjmarquespais/var/www/html/app.py
+
+sudo export GOOGLE_APPLICATION_CREDENTIALS=/home/mjmarquespais/var/www/html/keys.json
 
 sudo service apache2 start | sudo tee -a /var/log/startup-script.log
 
@@ -335,8 +709,24 @@ ExecStart=/usr/bin/sudo /usr/bin/python3 /home/mjmarquespais/var/www/html/app.py
 WantedBy=multi-user.target
 EOT
 
-sudo cp /home/mjmarquespais/flask-app.service /etc/systemd/system/flask-app.service | sudo tee -a /var/log/startup-script.log
 
-sudo systemctl daemon-reload | sudo tee -a /var/log/startup-script.log
-sudo systemctl enable flask-app | sudo tee -a /var/log/startup-script.log
-sudo systemctl start flask-app | sudo tee -a /var/log/startup-script.log
+ cat << 'EOT' > home/mjmarquespais/script.sh
+    #!/bin/bash
+    sudo cp /home/mjmarquespais/flask.service /etc/systemd/system/flask.service 
+
+    sudo systemctl daemon-reload 
+    sudo systemctl enable flask
+    sudo systemctl start flask
+EOT
+
+ cat << 'EOT' > home/mjmarquespais/scriptpip.sh
+    #!/bin/bash
+    sudo apt-get install -y python3-pip 
+
+    sudo pip install Flask 
+
+    sudo pip install google-cloud-storage 
+EOT
+
+sudo chmod +x home/mjmarquespais/script.sh
+sudo chmod +x home/mjmarquespais/scriptpip.sh

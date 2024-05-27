@@ -71,32 +71,6 @@ resource "google_compute_instance" "html-instance-europe-west9-a" {
   metadata_startup_script = file("scripts/http.sh")
 }
 
-/*
-resource "google_compute_instance" "cliente" {
-  name         = "cliente"
-  machine_type = "e2-micro"
-  zone         = "europe-west9-a"
-
-  boot_disk {
-    initialize_params {
-      image = "debian-cloud/debian-11"
-    }
-  }
-
-  network_interface {
-    network = "default"
-    # Add access_config with a static external IP address
-    access_config {
-    }
-    # Assign a static internal IP address
-    network_ip = "10.200.0.16"
-
-  }
-
-  metadata_startup_script = file("scripts/http.sh")
-}
-*/
-
 resource "google_compute_instance" "client-instance-1" {
   name = var.instance_client_1
   machine_type = "e2-micro"
@@ -165,7 +139,7 @@ resource "google_compute_instance" "client-instance-3" {
 
   }
 
-  metadata_startup_script = file("scripts/client.sh")
+  metadata_startup_script = file("scripts/cl.sh")
 }
 
 # Create instance groups
@@ -300,7 +274,7 @@ resource "google_compute_firewall" "www-firewall-rule-us" {
 
   allow {
     protocol = "tcp"
-    ports    = ["80","443","22","8080"]
+    ports    = ["80","443","22","8080","8000"]
   }
 
   source_ranges = [
@@ -314,7 +288,7 @@ resource "google_compute_firewall" "www-firewall-rule-eu" {
 
   allow {
     protocol = "tcp"
-    ports    = ["80","443","22","8080"]
+    ports    = ["80","443","22","8080","8000"]
   }
 
   source_ranges = [
@@ -328,7 +302,7 @@ resource "google_compute_firewall" "www-firewall-rule-aisa" {
 
   allow {
     protocol = "tcp"
-    ports    = ["80","443","22","8080"]
+    ports    = ["80","443","22","8080","8000"]
   }
 
   source_ranges = [
@@ -340,7 +314,7 @@ resource "google_compute_firewall" "www-firewall-rule-aisa" {
 resource "google_storage_bucket" "projetocloud-417315" {
   name     = "bucket-unique-bucket"
   location = "ASIA"
-  uniform_bucket_level_access = true
+  uniform_bucket_level_access = false
   storage_class = "STANDARD"
 }
 
