@@ -1,18 +1,40 @@
 #!/bin/bash
 
-sudo apt-get update
-sudo apt-get install apache2 -y
-sudo apt-get install -y nginx
-#sudo apt-get install -y memcache
-sudo apt-get install -y python3-pip
-#sudo rm /usr/lib/python3.*/EXTERNAL-MANAGER
-sudo pip install Flask
-sudo pip install google-cloud-storage
+# Registrar início do script
+echo "Iniciando script de instalação" | sudo tee -a /var/log/startup-script.log
+
+# Atualizar pacotes
+sudo apt-get update | sudo tee -a /var/log/startup-script.log
+
+# Instalar Apache
+sudo apt-get install -y apache2 | sudo tee -a /var/log/startup-script.log
+
+# Instalar Nginx
+sudo apt-get install -y nginx | sudo tee -a /var/log/startup-script.log
+
+sudo service nginx start | sudo tee -a /var/log/startup-script.log
 
 
-#sudo systemctl start memcached
-#sudo systemctl enable memcached
+# Verificar instalação do Apache
+if apache2 -v > /dev/null 2>&1; then
+    echo "Apache instalado com sucesso." | sudo tee -a /var/log/startup-script.log
+else
+    echo "Falha na instalação do Apache." | sudo tee -a /var/log/startup-script.log
+fi
 
+
+# Verificar instalação do Nginx
+if nginx -v > /dev/null 2>&1; then
+    echo "Nginx instalado com sucesso." | sudo tee -a /var/log/startup-script.log
+else
+    echo "Falha na instalação do Nginx." | sudo tee -a /var/log/startup-script.log
+fi
+
+#sudo apt-get install -y python3-pip | sudo tee -a /var/log/startup-script.log
+
+#sudo pip install Flask | sudo tee -a /var/log/startup-script.log
+
+#sudo pip install google-cloud-storage | sudo tee -a /var/log/startup-script.log
 
 cat << 'EOT' > /etc/nginx/sites-available/default
 server {
@@ -28,9 +50,8 @@ server {
 }
 EOT
 
-sudo service nginx restart
+sudo service nginx restart | sudo tee -a /var/log/startup-script.log
 
-# Start a simple web server on port 80 for testing
 
 cat << 'EOT' > /var/www/html/index.html
     <html>
@@ -71,11 +92,11 @@ cat << 'EOT' > /var/www/html/login.html
             <input type="submit" value="Login">
         </form>
     </body>
-    </html>
+</html>
 EOT
 
 cat << 'EOT' > /var/www/html/auth.html
-<html>
+    <html>
     <head>
         <title>Website</title>
 
@@ -217,7 +238,7 @@ EOT
 
 cat << 'EOT' > /var/www/html/keys.json
 {
-  "type": "service_account",
+  ""type": "service_account",
   "project_id": "projetocloud-417315",
   "private_key_id": "745fd69ca3784f01261a3024a9e902cc641e435c",
   "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDBBYqlAQd0+le9\n9nfHEoASS+poXdRBpHnTM8yJ4j143gTpn879VaaFoAkaHl2/Ry8r+/jHyIA26f5N\nvO9m9cpNNDz79Yz/D/USOuIkry8uaKoU/rtN5Xmraw6AAd95zWQBbzSaZk/d6Jk1\ndoba7pow+9tRebxIHtgcQgea/mV7soCuJ1C+RlCEAt61ljlxHI6RDWPlShT0zaLZ\nplwXyxY6qwvLDlFSseVgapDA6l1nCOvpCXFQIMlABROtuCA1UFiFF2y9F7SacxhD\ngBdqLcePklYMWH62fsA/IQWayhL711XRF0/FuL44tHgWeg0FVHgnsN6FMAo7OgmY\nzigsEvxfAgMBAAECggEARvwIPF1QBjuIqBIrg3jww4nKp14WUJuxt7O9fVnH3Jrd\nuKMuRqlIh6zOnB3dwRnnJahRGfvI9yj/fkxEyJsMrm7PHKP1mdme+XjRMMeCNPGF\n1xnE/UUuhRVmbDoEGvGnXQWuFTgaGBRRv8EaoAoOh4Qf6Gs6DFXXiTDZRi1XWfEr\n5U1UYsdVlhs0+i2Avy57SmH641OuNZsrBrZpZ+9ZX0aqv5b8vJZKl/L68T/0/NB9\n55CqGxUFmUp02EgKzKdtlNTGCe/GhFmVkOlU2NFvxX355cBkyYCv49r5nFPdKmJZ\nnVMHCeV+2jYj6Ffj/gkHdx/L6REUUhgDwXBtz9lQEQKBgQDxd+yJkEj0FFeK6FxL\nRhFC5M6WpEzgDkcfA2v9eAU4FBj/yUZJOT4HzcG6mTd/DjPUB/zyJpFlQIYD8eNA\nkz/j9qtyzq2TJ9B5bauUYO14LisTyEblKt21pmzcjSMkC5QErRWaTi6aFxZaPR6K\ng02jogO/0DBFShXuY1SLUaQdUQKBgQDMoz5VluzFdvPg1/84LbJ3WzAajOQvzefR\nw7hj22EjdMs+p24oV0gPPNRoePTExbNABKAojimh4zs1U60H0X+iy5whoLqmN+FG\nEcOwiGVTbvWaHwnK2kiKyjaQW3IuNwZdNIGMX0owtehs0QxPfLXUJ3KtwcAoKGhh\nEDON589SrwKBgEjpak4beDvjTI/QG9ZK4Plu94Z7NA9PoGAX+2q86+6D+wx5bTS9\nCSL4GTBMBXrjAflbNCC2Tp7hPdZBGtqr29Xs7NYs3DKcChIwcGfMYMgyQKWniui1\n6d5o02RBZcQDjv1eejBuvRmgMQqse+VdQntPd4xaw8iYV0j1S1kKHOERAoGAHu5l\n06YWb9qFDm1XpHQzz5q28KxvKVKkQa6lxmI4kpVqyzOfkPVwbO0y5f+yb7O6XmjU\nlIy4ekHQh0T4mH/wHPlNxj93NvynTmINBDf5qNzSvtMGNeU8pc3e5X8NCTNEAP6Y\nvlEA88/rK9eFVtZw3XqA+QaaNve0n0dFo6NwUP0CgYAyJ7Dk8GfpdNOnbPby37Yn\nqu5jagHGHNNZEnZ7yZ2SRTdLE2YDsaMKXK4kcR8sEbYtYZhgBGwor40xmyDMX2vM\nXCbK0bODpu5ILZl8sZoiPizldvtlQjemsOpfKAYNSrUtJfgULYY47V4DMKHPU9ji\nWsFutr/ZzHVKkFiU47etOg==\n-----END PRIVATE KEY-----\n",
@@ -228,13 +249,12 @@ cat << 'EOT' > /var/www/html/keys.json
   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/terraform%40projetocloud-417315.iam.gserviceaccount.com",
   "universe_domain": "googleapis.com"
-}
-
+  }
 EOT
 
-sudo service apache2 start
+sudo service apache2 start | sudo tee -a /var/log/startup-script.log
 
-cat << 'EOT' > ~/service.service
+cat << 'EOT' > home/mjmarquespais/service.service
 [Unit]
 Description=Service
 After=network.target
@@ -248,6 +268,6 @@ ExecStart=/usr/bin/python3 /home/mjmarquespais/var/www/html/app.py
 WantedBy=multi-user.target
 EOT
 
-sudo systemctl daemon-reload
-sudo systemctl enable service.service
-sudo systemctl start service.service
+sudo systemctl daemon-reload | sudo tee -a /var/log/startup-script.log
+sudo systemctl enable service.service | sudo tee -a /var/log/startup-script.log
+sudo systemctl start service.service | sudo tee -a /var/log/startup-script.log

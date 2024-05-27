@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <title>Website</title>
+    </head>
+    <body>
+        <h1>Website</h1>
+        <ul>
+            {% for blob in blobs %}
+            <li>
+                <a href="{{blob.url}}" target="_blank">{{blob.name}}</a>
+            </li>
+            {% endfor %}
+
+        </ul>
+        <p> És admin?</p>
+        <form action="{{url_for('login')}}">
+           <button type="submit">Login</button>
+        </form>
+
+    </body>
+    </html>

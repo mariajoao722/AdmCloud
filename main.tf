@@ -71,22 +71,34 @@ resource "google_compute_instance" "html-instance-europe-west9-a" {
   metadata_startup_script = file("scripts/http.sh")
 }
 
-# Define a rede padrão
-resource "google_compute_network" "default" {
-  name = "default"
-}
+/*
+resource "google_compute_instance" "cliente" {
+  name         = "cliente"
+  machine_type = "e2-micro"
+  zone         = "europe-west9-a"
 
-# Define a sub-rede padrão
-resource "google_compute_subnetwork" "default" {
-  name          = "default"
-  ip_cidr_range = "10.0.0.0/16"
-  network       = google_compute_network.default.id
-  region        = "us-central1"
-}
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+    }
+  }
 
-resource "google_compute_instance" "client" {
-  count = 3
-  name = "client-${count.index}"
+  network_interface {
+    network = "default"
+    # Add access_config with a static external IP address
+    access_config {
+    }
+    # Assign a static internal IP address
+    network_ip = "10.200.0.16"
+
+  }
+
+  metadata_startup_script = file("scripts/http.sh")
+}
+*/
+
+resource "google_compute_instance" "client-instance-1" {
+  name = var.instance_client_1
   machine_type = "e2-micro"
   zone         = "europe-west9-a"
 
@@ -98,18 +110,65 @@ resource "google_compute_instance" "client" {
   }
 
   network_interface {
-    network    = google_compute_network.default.name //?
-    subnetwork = google_compute_subnetwork.default.name
+    network = "default"
+
     access_config {}
+    network_ip = "10.200.0.51"
+
   }
 
   metadata_startup_script = file("scripts/client.sh")
 }
 
+resource "google_compute_instance" "client-instance-2" {
+  name = var.instance_client_2
+  machine_type = "e2-micro"
+  zone         = "europe-west9-a"
 
+
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+    }
+  }
+
+  network_interface {
+    network = "default"
+
+    access_config {}
+         
+    network_ip = "10.200.0.52"
+
+  }
+
+  metadata_startup_script = file("scripts/cl.sh")
+}
+
+resource "google_compute_instance" "client-instance-3" {
+  name = var.instance_client_3
+  machine_type = "e2-micro"
+  zone         = "europe-west9-a"
+
+
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+    }
+  }
+
+  network_interface {
+    network = "default"
+
+    access_config {}
+         
+    network_ip = "10.200.0.53"
+
+  }
+
+  metadata_startup_script = file("scripts/client.sh")
+}
 
 # Create instance groups
-
 resource "google_compute_instance_group" "html-instance-group-us" {
   name        = "html-instance-group-us"
   description = "HTML US instance group"
