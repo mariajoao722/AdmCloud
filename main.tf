@@ -313,7 +313,7 @@ resource "google_compute_firewall" "www-firewall-rule-aisa" {
 # Create a storage bucket
 resource "google_storage_bucket" "projetocloud-417315" {
   name     = "bucket-unique-bucket"
-  location = "ASIA"
+  location = "EU"
   uniform_bucket_level_access = false
   storage_class = "STANDARD"
 }
