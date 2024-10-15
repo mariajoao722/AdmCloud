@@ -674,17 +674,7 @@ EOT
 
 cat << 'EOT' > /var/www/html/keys.json
 {
-  "type": "service_account",
-  "project_id": "projetocloud-417315",
-  "private_key_id": "745fd69ca3784f01261a3024a9e902cc641e435c",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDBBYqlAQd0+le9\n9nfHEoASS+poXdRBpHnTM8yJ4j143gTpn879VaaFoAkaHl2/Ry8r+/jHyIA26f5N\nvO9m9cpNNDz79Yz/D/USOuIkry8uaKoU/rtN5Xmraw6AAd95zWQBbzSaZk/d6Jk1\ndoba7pow+9tRebxIHtgcQgea/mV7soCuJ1C+RlCEAt61ljlxHI6RDWPlShT0zaLZ\nplwXyxY6qwvLDlFSseVgapDA6l1nCOvpCXFQIMlABROtuCA1UFiFF2y9F7SacxhD\ngBdqLcePklYMWH62fsA/IQWayhL711XRF0/FuL44tHgWeg0FVHgnsN6FMAo7OgmY\nzigsEvxfAgMBAAECggEARvwIPF1QBjuIqBIrg3jww4nKp14WUJuxt7O9fVnH3Jrd\nuKMuRqlIh6zOnB3dwRnnJahRGfvI9yj/fkxEyJsMrm7PHKP1mdme+XjRMMeCNPGF\n1xnE/UUuhRVmbDoEGvGnXQWuFTgaGBRRv8EaoAoOh4Qf6Gs6DFXXiTDZRi1XWfEr\n5U1UYsdVlhs0+i2Avy57SmH641OuNZsrBrZpZ+9ZX0aqv5b8vJZKl/L68T/0/NB9\n55CqGxUFmUp02EgKzKdtlNTGCe/GhFmVkOlU2NFvxX355cBkyYCv49r5nFPdKmJZ\nnVMHCeV+2jYj6Ffj/gkHdx/L6REUUhgDwXBtz9lQEQKBgQDxd+yJkEj0FFeK6FxL\nRhFC5M6WpEzgDkcfA2v9eAU4FBj/yUZJOT4HzcG6mTd/DjPUB/zyJpFlQIYD8eNA\nkz/j9qtyzq2TJ9B5bauUYO14LisTyEblKt21pmzcjSMkC5QErRWaTi6aFxZaPR6K\ng02jogO/0DBFShXuY1SLUaQdUQKBgQDMoz5VluzFdvPg1/84LbJ3WzAajOQvzefR\nw7hj22EjdMs+p24oV0gPPNRoePTExbNABKAojimh4zs1U60H0X+iy5whoLqmN+FG\nEcOwiGVTbvWaHwnK2kiKyjaQW3IuNwZdNIGMX0owtehs0QxPfLXUJ3KtwcAoKGhh\nEDON589SrwKBgEjpak4beDvjTI/QG9ZK4Plu94Z7NA9PoGAX+2q86+6D+wx5bTS9\nCSL4GTBMBXrjAflbNCC2Tp7hPdZBGtqr29Xs7NYs3DKcChIwcGfMYMgyQKWniui1\n6d5o02RBZcQDjv1eejBuvRmgMQqse+VdQntPd4xaw8iYV0j1S1kKHOERAoGAHu5l\n06YWb9qFDm1XpHQzz5q28KxvKVKkQa6lxmI4kpVqyzOfkPVwbO0y5f+yb7O6XmjU\nlIy4ekHQh0T4mH/wHPlNxj93NvynTmINBDf5qNzSvtMGNeU8pc3e5X8NCTNEAP6Y\nvlEA88/rK9eFVtZw3XqA+QaaNve0n0dFo6NwUP0CgYAyJ7Dk8GfpdNOnbPby37Yn\nqu5jagHGHNNZEnZ7yZ2SRTdLE2YDsaMKXK4kcR8sEbYtYZhgBGwor40xmyDMX2vM\nXCbK0bODpu5ILZl8sZoiPizldvtlQjemsOpfKAYNSrUtJfgULYY47V4DMKHPU9ji\nWsFutr/ZzHVKkFiU47etOg==\n-----END PRIVATE KEY-----\n",
-  "client_email": "terraform@projetocloud-417315.iam.gserviceaccount.com",
-  "client_id": "104386956189662735894",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/terraform%40projetocloud-417315.iam.gserviceaccount.com",
-  "universe_domain": "googleapis.com"
+ 
 }
 
 EOT
